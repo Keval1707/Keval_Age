@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submit Details</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #ff9a9e 0%,
+          #fad0c4 50%,
+          #fad0c4 100%
+        );
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 1.5rem;
+        color: #333;
+      }
+
+      table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+      }
+
+      table td {
+        padding: 0.5rem;
+      }
+
+      input[type="date"] {
+        width: 100%;
+        padding: 0.5rem;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      button {
+        padding: 0.75rem 1.5rem;
+        margin: 0.5rem 0.25rem;
+        border: none;
+        background-color: #28a745;
+        color: white;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #218838;
+      }
+
+      #totalDifference {
+        margin-top: 1.5rem;
+        font-size: 1.25rem;
+        color: #333;
+      }
+    </style>
+    <script>
+      function calculateDateDifference(row) {
+        const date1 = new Date(row.querySelector(".date1").value);
+        const date2 = new Date(row.querySelector(".date2").value);
+
+        if (date1 > date2) {
+          row.querySelector(".answer").innerText =
+            "First date should not be later than the second date";
+          return;
+        }
+
+        if (!isNaN(date1.getTime()) && !isNaN(date2.getTime())) {
+          let diffYears = date2.getFullYear() - date1.getFullYear();
+          let diffMonths = date2.getMonth() - date1.getMonth();
+          let diffDays = date2.getDate() - date1.getDate();
+
+          if (diffDays < 0) {
+            diffMonths--;
+            diffDays += new Date(
+              date2.getFullYear(),
+              date2.getMonth(),
+              0
+            ).getDate();
+          }
+
+          if (diffMonths < 0) {
+            diffYears--;
+            diffMonths += 12;
+          }
+
+          row.querySelector(
+            ".answer"
+          ).innerText = `${diffYears} year(s) ${diffMonths} month(s) ${diffDays} day(s)`;
+        } else {
+          row.querySelector(".answer").innerText = "Please select both dates";
+        }
+      }
+
+      function addRow() {
+        const table = document.getElementById("dateTable");
+        const newRow = document.createElement("tr");
+
+        newRow.innerHTML = `
+        <td><input type="date" class="date1" onchange="calculateDateDifference(this.parentElement.parentElement)"></td>
+        <td style="padding: 1rem;">To</td>
+        <td><input type="date" class="date2" onchange="calculateDateDifference(this.parentElement.parentElement)"></td>
+        <td class="answer"></td>
+      `;
+
+        table.appendChild(newRow);
+      }
+
+      function sumDateDifferences() {
+        const rows = document.querySelectorAll("#dateTable tr");
+        let totalYears = 0,
+          totalMonths = 0,
+          totalDays = 0;
+
+        rows.forEach((row) => {
+          const date1 = new Date(row.querySelector(".date1").value);
+          const date2 = new Date(row.querySelector(".date2").value);
+
+          if (
+            !isNaN(date1.getTime()) &&
+            !isNaN(date2.getTime()) &&
+            date1 <= date2
+          ) {
+            let diffYears = date2.getFullYear() - date1.getFullYear();
+            let diffMonths = date2.getMonth() - date1.getMonth();
+            let diffDays = date2.getDate() - date1.getDate();
+
+            if (diffDays < 0) {
+              diffMonths--;
+              diffDays += new Date(
+                date2.getFullYear(),
+                date2.getMonth(),
+                0
+              ).getDate();
+            }
+
+            if (diffMonths < 0) {
+              diffYears--;
+              diffMonths += 12;
+            }
+
+            totalYears += diffYears;
+            totalMonths += diffMonths;
+            totalDays += diffDays;
+          }
+        });
+
+        if (totalDays >= 30) {
+          totalMonths += Math.floor(totalDays / 30);
+          totalDays = totalDays % 30;
+        }
+
+        if (totalMonths >= 12) {
+          totalYears += Math.floor(totalMonths / 12);
+          totalMonths = totalMonths % 12;
+        }
+
+        document.getElementById(
+          "totalDifference"
+        ).innerText = `${totalYears} year(s) ${totalMonths} month(s) ${totalDays} day(s)`;
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Welcome to Keval's World</h1>
+      <table id="dateTable">
+        <tr>
+          <td>
+            <input
+              type="date"
+              class="date1"
+              onchange="calculateDateDifference(this.parentElement.parentElement)"
+            />
+          </td>
+          <td style="padding: 1rem">To</td>
+          <td>
+            <input
+              type="date"
+              class="date2"
+              onchange="calculateDateDifference(this.parentElement.parentElement)"
+            />
+          </td>
+          <td class="answer"></td>
+        </tr>
+      </table>
+      <button onclick="addRow()">Add Row</button>
+      <button onclick="sumDateDifferences()">Calculate Total Difference</button>
+      <div id="totalDifference"></div>
+    </div>
+  </body>
+</html>
